@@ -82,6 +82,16 @@ textarea {
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 @media (prefers-reduced-motion: reduce) { .shimmer { animation: none; } }
 
+.progress {
+  height: 3px; background: var(--soft); overflow: hidden;
+  margin-top: -1px; transition: opacity .4s;
+}
+.progress.done { opacity: 0; }
+.progress-fill {
+  height: 100%; width: 0; background: var(--text);
+  transform-origin: left; transition: width .25s linear;
+}
+
 .bar { display: flex; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 .status { flex: 1; color: var(--muted); font-size: 14px; min-width: 120px; }
 .status.err { color: var(--err); }
