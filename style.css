@@ -1,0 +1,127 @@
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --text: #1c1c1a;
+  --muted: #76746f;
+  --line: #e6e4df;
+  --soft: #f1f0ec;
+  --err: #b42318;
+  --radius: 12px;
+  --serif: "Newsreader", Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111110;
+    --surface: #191918;
+    --text: #ecebe7;
+    --muted: #96948e;
+    --line: #2a2927;
+    --soft: #222120;
+    --err: #f97066;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 64px 24px 40px; }
+
+header { margin-bottom: 32px; }
+h1 { font: 500 36px/1.1 var(--serif); letter-spacing: -0.015em; margin: 0 0 8px; }
+.sub { margin: 0; color: var(--muted); max-width: 52ch; }
+
+.panes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pane {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column;
+  min-height: 480px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.pane:focus-within { border-color: color-mix(in srgb, var(--text) 30%, var(--line)); }
+.pane-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--line); min-height: 48px;
+}
+.label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.meta { color: var(--muted); font-size: 13px; }
+.tools { display: flex; align-items: center; gap: 10px; }
+
+textarea {
+  flex: 1; width: 100%; border: 0; outline: 0; resize: none;
+  background: transparent; color: var(--text);
+  font: 17px/1.65 var(--serif);
+  padding: 16px;
+}
+.output {
+  flex: 1; padding: 16px; font: 17px/1.65 var(--serif);
+  white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto;
+}
+.output.empty .placeholder { color: var(--muted); opacity: 0.7; }
+.output .error { color: var(--err); font: 14px/1.5 var(--sans); }
+
+.output.loading { display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+.shimmer {
+  height: 12px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--soft) 0%, var(--line) 50%, var(--soft) 100%);
+  background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .shimmer { animation: none; } }
+
+.bar { display: flex; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.status { flex: 1; color: var(--muted); font-size: 14px; min-width: 120px; }
+.status.err { color: var(--err); }
+
+button {
+  font: 500 14px var(--sans); color: var(--text);
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+  padding: 10px 14px; cursor: pointer;
+}
+button:disabled { opacity: 0.45; cursor: default; }
+button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.primary:hover:not(:disabled) { opacity: 0.88; }
+.primary kbd { font: 12px var(--sans); opacity: 0.55; margin-left: 6px; }
+.ghost { background: transparent; border-color: transparent; }
+.ghost:hover:not(:disabled) { background: var(--soft); }
+.small { padding: 5px 10px; font-size: 13px; }
+
+.seg {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: var(--soft); border-radius: 10px;
+}
+.seg button {
+  border: 0; background: transparent; color: var(--muted);
+  padding: 7px 12px; font-size: 13px; border-radius: 8px;
+}
+.seg button[aria-checked="true"] {
+  background: var(--surface); color: var(--text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px var(--line);
+}
+
+.foot { margin-top: 40px; color: var(--muted); font-size: 13px; }
+.foot a:last-child { margin-left: 8px; }
+
+@media (max-width: 760px) {
+  .wrap { padding: 36px 16px 28px; }
+  h1 { font-size: 30px; }
+  .panes { grid-template-columns: 1fr; }
+  .pane { min-height: 260px; }
+  .primary kbd { display: none; }
+  .status { order: 3; flex-basis: 100%; }
+  #go { margin-left: auto; }
+}

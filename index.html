@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deft Rewrite</title>
+  <meta name="description" content="Paste AI-generated text and get it back rewritten by Deft so it reads like a person wrote it.">
+  <link rel="canonical" href="https://michael-han.com/deft/">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='4' width='24' height='24' rx='7' fill='%231c1c1a'/><path d='M11 21l10-10' stroke='%23fafaf8' stroke-width='2.6' stroke-linecap='round'/></svg>">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafaf8">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111110">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Rewrite</h1>
+      <p class="sub">Paste AI-generated text. Get it back in prose that reads like a person wrote it.</p>
+    </header>
+
+    <section class="panes">
+      <div class="pane">
+        <div class="pane-head">
+          <span class="label">Original</span>
+          <span class="meta"><span id="inCount">0</span> words</span>
+        </div>
+        <textarea id="input" spellcheck="false" placeholder="Paste your text here…" aria-label="Original text"></textarea>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <span class="label">Rewritten</span>
+          <span class="tools">
+            <span class="meta" id="outCount" hidden></span>
+            <button id="copyBtn" class="ghost small" disabled>Copy</button>
+          </span>
+        </div>
+        <div id="output" class="output empty" aria-live="polite"><span class="placeholder">The rewrite appears here.</span></div>
+      </div>
+    </section>
+
+    <section class="bar">
+      <div class="seg" role="radiogroup" aria-label="Speed">
+        <button role="radio" data-group="thinkingLevel" data-value="faster" aria-checked="true">Faster</button>
+        <button role="radio" data-group="thinkingLevel" data-value="smarter" aria-checked="false">Smarter</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Optimize for">
+        <button role="radio" data-group="optimizeFor" data-value="human" aria-checked="true">Human</button>
+        <button role="radio" data-group="optimizeFor" data-value="polished" aria-checked="false">Polished</button>
+      </div>
+      <span id="status" class="status" role="status"></span>
+      <button id="go" class="primary">Rewrite <kbd>⌘↵</kbd></button>
+    </section>
+
+    <footer class="foot">
+      Powered by <a href="https://deftwriting.com" target="_blank" rel="noopener">Deft</a>.
+      Text is sent to Deft to be rewritten and isn't stored here.
+      <a href="https://michael-han.com/">michael-han.com</a>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
