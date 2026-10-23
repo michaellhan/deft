@@ -52,6 +52,10 @@
         <button role="radio" data-group="optimizeFor" data-value="human" aria-checked="true">Human</button>
         <button role="radio" data-group="optimizeFor" data-value="polished" aria-checked="false">Polished</button>
       </div>
+      <label class="limit">
+        <span>Word limit</span>
+        <input id="limit" type="number" inputmode="numeric" min="10" max="5000" step="10" placeholder="None" aria-label="Word limit">
+      </label>
       <span id="status" class="status" role="status"></span>
       <button id="go" class="primary">Rewrite <kbd>⌘↵</kbd></button>
     </section>

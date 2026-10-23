@@ -2,12 +2,13 @@ const API = location.hostname.endsWith("michael-han.com")
   ? "api/rewrite"
   : "https://www.michael-han.com/deft/api/rewrite";
 const MAX_CHARS = 20000;
+const LIMIT_RANGE = [10, 5000];
 
 const $ = (id) => document.getElementById(id);
 const els = {
   input: $("input"), output: $("output"), go: $("go"), status: $("status"),
   copy: $("copyBtn"), inCount: $("inCount"), outCount: $("outCount"),
-  progress: $("progress"), fill: $("progressFill"),
+  progress: $("progress"), fill: $("progressFill"), limit: $("limit"),
 };
 
 const store = {
@@ -76,13 +77,20 @@ function showError(msg) {
   els.output.append(p);
 }
 
-function showResult(text) {
+function showResult(text, limit) {
   result = text;
   els.output.className = "output";
   els.output.textContent = text;
   els.copy.disabled = false;
   els.outCount.hidden = false;
-  els.outCount.textContent = `${words(text)} words`;
+  els.outCount.textContent = limit ? `${words(text)} / ${limit} words` : `${words(text)} words`;
+}
+
+function readLimit() {
+  const raw = els.limit.value.trim();
+  if (!raw) return null;
+  const n = Math.round(Number(raw));
+  return Number.isFinite(n) && n >= LIMIT_RANGE[0] && n <= LIMIT_RANGE[1] ? n : NaN;
 }
 
 // Segmented controls
@@ -111,29 +119,63 @@ const onInput = () => {
 els.input.addEventListener("input", onInput);
 onInput();
 
+els.limit.value = store.get("deft:limit") || "";
+els.limit.addEventListener("input", () => store.set("deft:limit", els.limit.value.trim()));
+
+// Reads the worker's NDJSON stream, calling onEvent for each line.
+async function readEvents(res, onEvent) {
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    buf += dec.decode(value || new Uint8Array(), { stream: !done });
+    let nl;
+    while ((nl = buf.indexOf("\n")) >= 0) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (line) onEvent(JSON.parse(line));
+    }
+    if (done) break;
+  }
+}
+
 async function run() {
   if (busy) return;
   const text = els.input.value.trim();
   if (!text) { els.input.focus(); setStatus("Paste some text first."); return; }
   if (text.length > MAX_CHARS) { setStatus(`Keep it under ${MAX_CHARS.toLocaleString()} characters.`, true); return; }
 
+  const limit = readLimit();
+  if (Number.isNaN(limit)) {
+    els.limit.focus();
+    setStatus(`Word limit must be between ${LIMIT_RANGE[0]} and ${LIMIT_RANGE[1].toLocaleString()}.`, true);
+    return;
+  }
+
   busy = true;
   els.go.disabled = true;
   els.copy.disabled = true;
   els.outCount.hidden = true;
   showLoading();
-  const est = estimateSeconds(words(text));
   const started = Date.now();
   els.progress.hidden = false;
   els.progress.classList.remove("done");
-  els.fill.style.transition = "none";
-  els.fill.style.width = "0";
-  void els.fill.offsetWidth;
-  els.fill.style.transition = "";
+
+  // The bar restarts for each pass; later passes tighten the previous output.
+  let pass = { n: 1, of: 1, est: estimateSeconds(words(text)), started, label: "Rewriting" };
+  const resetBar = () => {
+    els.fill.style.transition = "none";
+    els.fill.style.width = "0";
+    void els.fill.offsetWidth;
+    els.fill.style.transition = "";
+  };
+  resetBar();
   const update = () => {
-    const elapsed = (Date.now() - started) / 1000;
-    els.fill.style.width = `${progressAt(elapsed, est) * 100}%`;
-    setStatus(`Rewriting… ${elapsed < est ? fmtLeft(est - elapsed) : "taking a little longer"}`);
+    const elapsed = (Date.now() - pass.started) / 1000;
+    els.fill.style.width = `${progressAt(elapsed, pass.est) * 100}%`;
+    const step = pass.of > 1 ? ` (pass ${pass.n})` : "";
+    setStatus(`${pass.label}${step}… ${elapsed < pass.est ? fmtLeft(pass.est - elapsed) : "taking a little longer"}`);
   };
   update();
   const tick = setInterval(update, 250);
@@ -142,14 +184,40 @@ async function run() {
     const res = await fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: text, ...options }),
+      body: JSON.stringify({ prompt: text, ...options, ...(limit && { wordLimit: limit }) }),
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || `Something went wrong (${res.status}).`);
-    const took = (Date.now() - started) / 1000;
-    learn(est, took);
-    showResult(data.text || "");
-    setStatus(`Done in ${Math.round(took)}s`);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || `Something went wrong (${res.status}).`);
+    }
+    let final = null;
+    let passes = 0;
+    await readEvents(res, (ev) => {
+      if (ev.type === "pass") {
+        if (ev.pass > 1) {
+          if (ev.stage === "shorten") learn(pass.est, (Date.now() - pass.started) / 1000);
+          const label = ev.stage === "shorten" ? `Shortening ${ev.words} → ${ev.limit} words` : "Rewriting the shorter draft";
+          pass = { n: ev.pass, of: ev.of, est: estimateSeconds(ev.words), started: Date.now(), label };
+          resetBar();
+          update();
+        } else {
+          pass.of = ev.of;
+        }
+        passes = ev.pass;
+      } else if (ev.type === "done") {
+        final = ev;
+      } else if (ev.type === "error") {
+        throw new Error(ev.message);
+      }
+    });
+    if (!final) throw new Error("The rewrite stopped partway. Try again.");
+    if (passes === 1) learn(pass.est, (Date.now() - pass.started) / 1000);
+    const took = Math.round((Date.now() - started) / 1000);
+    showResult(final.text, final.limit);
+    const extra = passes > 1 ? ` · ${passes} passes` : "";
+    setStatus(final.over
+      ? `Done in ${took}s${extra}. Still ${final.over} words over the limit.`
+      : `Done in ${took}s${extra}`);
   } catch (err) {
     showError(err.message === "Failed to fetch" ? "Couldn't reach the server. Check your connection and try again." : err.message);
     setStatus("");

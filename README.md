@@ -18,7 +18,7 @@ Live at **[michael-han.com/deft](https://michael-han.com/deft/)**.
 }
 ```
 
-The page lets visitors switch `thinkingLevel` (faster / smarter) and `optimizeFor` (human / polished). The worker caps input at 20,000 characters, only accepts requests from michael-han.com (and localhost), and rate limits each IP to 5 requests per minute.
+The page lets visitors switch `thinkingLevel` (faster / smarter) and `optimizeFor` (human / polished). Visitors can also set an optional word limit (10–5,000). Deft's rewrite mode doesn't accept instructions, so if a rewrite runs over the limit, the worker shortens it with Deft's strict generate mode (`generationMode: "simple"`, `detailMode: "strict"`) and rewrites the shorter draft again, up to 3 rewrites. The final text is always a rewrite. If it never fits, the shortest one comes back with a note. The worker streams NDJSON progress events (`pass`, `done`, `error`) so the page can show each step. The worker caps input at 20,000 characters, only accepts requests from michael-han.com (and localhost), and rate limits each IP to 5 requests per minute.
 
 ## Deploy the worker
 

@@ -123,6 +123,22 @@ button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px var(--line);
 }
 
+.limit {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--soft); border-radius: 10px; padding: 3px 3px 3px 12px;
+  font-size: 13px; color: var(--muted);
+}
+.limit input {
+  width: 72px; border: 0; outline: 0; border-radius: 8px;
+  background: var(--surface); color: var(--text);
+  font: 500 13px var(--sans); padding: 7px 10px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px var(--line);
+  -moz-appearance: textfield;
+}
+.limit input::-webkit-outer-spin-button, .limit input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.limit input::placeholder { color: var(--muted); font-weight: 400; }
+.limit input:focus-visible { box-shadow: 0 0 0 2px var(--text); }
+
 .foot { margin-top: 40px; color: var(--muted); font-size: 13px; }
 .foot a:last-child { margin-left: 8px; }
 
