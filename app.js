@@ -8,7 +8,7 @@ const $ = (id) => document.getElementById(id);
 const els = {
   input: $("input"), output: $("output"), go: $("go"), status: $("status"),
   copy: $("copyBtn"), inCount: $("inCount"), outCount: $("outCount"),
-  progress: $("progress"), fill: $("progressFill"), limit: $("limit"),
+  progress: $("progress"), fill: $("progressFill"), limit: $("limit"), noLimit: $("noLimit"),
 };
 
 const store = {
@@ -94,7 +94,7 @@ function readLimit() {
 }
 
 // Segmented controls
-document.querySelectorAll(".seg button").forEach((btn) => {
+document.querySelectorAll(".seg button[data-group]").forEach((btn) => {
   const { group, value } = btn.dataset;
   const saved = store.get(`deft:${group}`);
   if (saved) options[group] = saved;
@@ -105,7 +105,7 @@ document.querySelectorAll(".seg button").forEach((btn) => {
   });
 });
 function syncSeg() {
-  document.querySelectorAll(".seg button").forEach((b) => {
+  document.querySelectorAll(".seg button[data-group]").forEach((b) => {
     b.setAttribute("aria-checked", String(options[b.dataset.group] === b.dataset.value));
   });
 }
@@ -120,7 +120,20 @@ els.input.addEventListener("input", onInput);
 onInput();
 
 els.limit.value = store.get("deft:limit") || "";
-els.limit.addEventListener("input", () => store.set("deft:limit", els.limit.value.trim()));
+const syncLimit = () => {
+  const on = els.limit.value.trim() !== "";
+  els.limit.closest(".limit-field").classList.toggle("on", on);
+  // Fit the field to its digits so "250 words" reads as one label.
+  els.limit.style.width = on ? `${Math.max(2, els.limit.value.length) + 0.4}ch` : "";
+  els.noLimit.setAttribute("aria-pressed", String(!on));
+};
+els.limit.addEventListener("input", () => { store.set("deft:limit", els.limit.value.trim()); syncLimit(); });
+els.noLimit.addEventListener("click", () => {
+  els.limit.value = "";
+  store.set("deft:limit", "");
+  syncLimit();
+});
+syncLimit();
 
 // Reads the worker's NDJSON stream, calling onEvent for each line.
 async function readEvents(res, onEvent) {

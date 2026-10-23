@@ -123,21 +123,27 @@ button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px var(--line);
 }
 
-.limit {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--soft); border-radius: 10px; padding: 3px 3px 3px 12px;
-  font-size: 13px; color: var(--muted);
-}
-.limit input {
-  width: 72px; border: 0; outline: 0; border-radius: 8px;
+.seg button[aria-pressed="true"],
+.limit-field.on {
   background: var(--surface); color: var(--text);
-  font: 500 13px var(--sans); padding: 7px 10px;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px var(--line);
-  -moz-appearance: textfield;
 }
-.limit input::-webkit-outer-spin-button, .limit input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.limit input::placeholder { color: var(--muted); font-weight: 400; }
-.limit input:focus-visible { box-shadow: 0 0 0 2px var(--text); }
+
+/* Word limit: a segment you type into, styled like the buttons beside it. */
+.limit-field {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0 12px; border-radius: 8px; cursor: text;
+  font: 500 13px var(--sans); color: var(--muted);
+}
+.limit-field:focus-within { outline: 2px solid var(--text); outline-offset: 2px; }
+.limit-field input {
+  width: 64px; border: 0; outline: 0; padding: 7px 0; background: transparent;
+  font: inherit; color: inherit; -moz-appearance: textfield;
+}
+.limit-field input::-webkit-outer-spin-button, .limit-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.limit-field input::placeholder { color: var(--muted); opacity: 1; }
+.limit-unit { display: none; }
+.limit-field.on .limit-unit { display: inline; }
 
 .foot { margin-top: 40px; color: var(--muted); font-size: 13px; }
 .foot a:last-child { margin-left: 8px; }
